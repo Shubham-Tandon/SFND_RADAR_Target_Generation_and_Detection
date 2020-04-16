@@ -1,9 +1,6 @@
 # SFND_RADAR_Target_Generation_and_Detection
 
 
-<img src="images/course_code_structure.png" width="779" height="414" />
-
-
 ## 2D CFAR
 The following steps were taken for the implementation for 2D CFAR:
 1. The number of Training and Guard Band columns and rows.
@@ -37,3 +34,16 @@ The following steps were taken for the implementation for 2D CFAR:
 5. Threshold is created by summing all the noise cell values and taking mean.
 6. Thresholds is multiplied by an offset to maintain the SNR.
 7. Output matrix cell are given the value of 1 if signal is greater than threshold else it reamins 0.
+
+# Offset Selection
+I started with a low value of 1.5. That resulted in a lot fo noise being selected as target.
+<img src="img/offset_1_5.jpg" width="779" height="414" />
+<br/>
+
+I increased the offset to 2.5. There was still a few noise peaks selected as targets.
+<img src="img/offset_2_5.jpg" width="779" height="414" />
+<br/>
+
+Finally the value of 4.0 was settled. Since it was the minimum offset value to give a defined target without any noise being selected.
+<img src="img/offset_4_0.jpg" width="779" height="414" />
+<br/>

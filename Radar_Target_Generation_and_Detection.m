@@ -216,7 +216,7 @@ end
 
 % *%TODO* :
 % offset the threshold by SNR value 
-offset = 5;
+offset = 4;
 
 % *%TODO* :
 %Create a vector to store noise_level for each iteration on training cells
