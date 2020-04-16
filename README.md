@@ -29,7 +29,7 @@ The following steps were taken for the implementation for 2D CFAR:
 
 <br/><br/>
 
-3. An output matrix consisting of zeros is created with size same as fft2 RDM matrix.
+3. An output matrix consisting of zeros is created with size same as fft2 RDM matrix so that the non-thresholded cells already have a padding of 0s.
 4. A loop is created to pass the sliding window over the fft2 RDM matrix.
 5. Threshold is created by summing all the noise cell values and taking mean.
 6. Thresholds is multiplied by an offset to maintain the SNR.
@@ -46,4 +46,19 @@ I increased the offset to 2.5. There was still a few noise peaks selected as tar
 
 Finally the value of 4.0 was settled. Since it was the minimum offset value to give a defined target without any noise being selected.
 <img src="img/offset_4.jpg" width="650" height="500" />
+<br/>
+
+
+
+### Training and Gaurd Cell Selection
+At first small values for training and gaurd cells were considered (2 each). This resulted in a lot of target portion being selected as noise.
+<img src="img/tr2_tc2_gr2_gc2.jpg" width="650" height="500" />
+<br/>
+
+Gradually the values were increased till a good target size was achieved.
+- Target Band Rows = 10
+- Target Band Columns = 8
+- Gaurd Band Rows = 4
+- Gaurd Band Columns = 2
+<img src="img/tr10_tc8_gr_4_gc_2.jpg" width="650" height="500" />
 <br/>
