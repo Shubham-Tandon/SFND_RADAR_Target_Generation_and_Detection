@@ -37,13 +37,13 @@ The following steps were taken for the implementation for 2D CFAR:
 
 # Offset Selection
 I started with a low value of 1.5. That resulted in a lot fo noise being selected as target.
-<img src="img/offset_1_5.jpg" width="779" height="414" />
+<img src="img/offset_1_5.jpg" width="500" height="500" />
 <br/>
 
 I increased the offset to 2.5. There was still a few noise peaks selected as targets.
-<img src="img/offset_2_5.jpg" width="779" height="414" />
+<img src="img/offset_2_5.jpg" width="500" height="500" />
 <br/>
 
 Finally the value of 4.0 was settled. Since it was the minimum offset value to give a defined target without any noise being selected.
-<img src="img/offset_4_0.jpg" width="779" height="414" />
+<img src="img/offset_4.jpg" width="500" height="500" />
 <br/>
