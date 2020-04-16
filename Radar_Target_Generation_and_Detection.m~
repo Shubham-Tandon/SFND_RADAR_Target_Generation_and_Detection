@@ -167,19 +167,42 @@ figure,surf(doppler_axis,range_axis,RDM);
 % *%TODO* :
 %Select the number of Training Cells in both the dimensions.
 Tc = 4;
-Tr = 4;
+Tr = 8;
 
 % *%TODO* :
 %Select the number of Guard Cells in both dimensions around the Cell under 
 %test (CUT) for accurate estimation
 Gc = 2;
-Gr = 2;
+Gr = 4;
 
 Cols = 2 * (Tc + Gc) + 1;
 Rows = 2 * (Tr + Gr) + 1;
 
 TrnCells = 2* Tc * (2* (Tr + Gr) + 1) + 2*Tr * (2 * Gc + 1);
+
+
+% Create a sliding window of 1s of the following size
+% 
+%              T T T T T T T T T T T 
+%              T T T T T T T T T T T 
+%              T T T G G G G G T T T 
+%              T T T G G C G G T T T 
+%              T T T G G G G G T T T 
+%              T T T T T T T T T T T 
+%              T T T T T T T T T T T 
+          
 window   = ones(Rows, Cols);
+
+% Mofidy the sliding window so that only trainig cells have 1s. Those are
+% the cells for which nose needs to be added
+% 
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 0 0 0 0 0 1 1 1 
+%              1 1 1 0 0 0 0 0 1 1 1 
+%              1 1 1 0 0 0 0 0 1 1 1  
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 1 1 1 1 1 1 1 1
 
 for row = 1:Rows
     for col = 1:Cols
@@ -192,8 +215,8 @@ for row = 1:Rows
 end
 
 % *%TODO* :
-% offset the threshold by SNR value in dB
-offset = 2;
+% offset the threshold by SNR value 
+offset = 5;
 
 % *%TODO* :
 %Create a vector to store noise_level for each iteration on training cells
@@ -221,10 +244,13 @@ RDM_CFAR = zeros(RSMSize);
 for row = 1:(RSMSize(1) - 2*(Gr+Tr))  
     for col = 1:(RSMSize(2) - 2*(Gc+Tc))
         
+        % Calculate the noise matrix by multiplying the sliding window with
+        % the RDM matrix matching the sliding window size
         noise_level = window.*RDM(row:(winSize(1) + row - 1), col:(winSize(2) + col - 1));
-        noise_level = db2pow(noise_level);
+        noise_level = db2pow(noise_level);    % Convert from 
         noise       = sum(sum(noise_level, 'All'));        
-        threshold   = pow2db((noise / TrnCells) * offset;
+        threshold   = (noise / TrnCells) * offset;
+        threshold   = pow2db(threshold);
         signal      = RDM(row + Tr + Gr, col + Tc + Gc);
         
         if signal > threshold
@@ -232,14 +258,9 @@ for row = 1:(RSMSize(1) - 2*(Gr+Tr))
         end
         
         fprintf(' %i, %i Thresh: %0.3f, Signal: %0.3f \n', row, col, threshold, signal);
-        
-%         noise_level
-        
-%         break;
-        
+             
     end
     
-%     break;
 end
 
 

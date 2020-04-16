@@ -24,8 +24,8 @@ sweepFactor = 5.5;
 % *%TODO* :
 % define the target's initial position and velocity. Note : Velocity
 % remains contant
-Rtarget = 150;  % m
-Vtarget = 30;   % m/s
+Rtarget = 110;  % m
+Vtarget = -20;   % m/s
  
 
 
@@ -77,7 +77,7 @@ for i=1:length(t)
     % *%TODO* :
     %For each time stamp update the Range of the Target for constant velocity. 
     if (i > 1)
-        Rtarget = Rtarget - Vtarget * (t(i) - t(i - 1));
+        Rtarget = Rtarget + Vtarget * (t(i) - t(i - 1));
     end
     
     tD = 2 * Rtarget / c ;
@@ -166,8 +166,8 @@ figure,surf(doppler_axis,range_axis,RDM);
 
 % *%TODO* :
 %Select the number of Training Cells in both the dimensions.
-Tc = 4;
-Tr = 8;
+Tc = 8;
+Tr = 10;
 
 % *%TODO* :
 %Select the number of Guard Cells in both dimensions around the Cell under 
@@ -179,7 +179,30 @@ Cols = 2 * (Tc + Gc) + 1;
 Rows = 2 * (Tr + Gr) + 1;
 
 TrnCells = 2* Tc * (2* (Tr + Gr) + 1) + 2*Tr * (2 * Gc + 1);
+
+
+% Create a sliding window of 1s of the following size
+% 
+%              T T T T T T T T T T T 
+%              T T T T T T T T T T T 
+%              T T T G G G G G T T T 
+%              T T T G G C G G T T T 
+%              T T T G G G G G T T T 
+%              T T T T T T T T T T T 
+%              T T T T T T T T T T T 
+          
 window   = ones(Rows, Cols);
+
+% Mofidy the sliding window so that only trainig cells have 1s. Those are
+% the cells for which nose needs to be added
+% 
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 0 0 0 0 0 1 1 1 
+%              1 1 1 0 0 0 0 0 1 1 1 
+%              1 1 1 0 0 0 0 0 1 1 1  
+%              1 1 1 1 1 1 1 1 1 1 1
+%              1 1 1 1 1 1 1 1 1 1 1
 
 for row = 1:Rows
     for col = 1:Cols
@@ -192,12 +215,12 @@ for row = 1:Rows
 end
 
 % *%TODO* :
-% offset the threshold by SNR value in dB
+% offset the threshold by SNR value 
 offset = 5;
 
 % *%TODO* :
 %Create a vector to store noise_level for each iteration on training cells
-noise_level = zeros(size(window));
+noise_matrix = zeros(size(window));
 
 % *%TODO* :
 %design a loop such that it slides the CUT across range doppler map by
@@ -221,12 +244,14 @@ RDM_CFAR = zeros(RSMSize);
 for row = 1:(RSMSize(1) - 2*(Gr+Tr))  
     for col = 1:(RSMSize(2) - 2*(Gc+Tc))
         
-        noise_level = window.*RDM(row:(winSize(1) + row - 1), col:(winSize(2) + col - 1));
-        noise_level = db2pow(noise_level);
-        noise       = sum(sum(noise_level, 'All'));        
-        threshold   = (noise / TrnCells) * offset;
-        threshold   = pow2db(threshold);
-        signal      = RDM(row + Tr + Gr, col + Tc + Gc);
+        % Calculate the noise matrix by multiplying the sliding window with
+        % the RDM matrix matching the sliding window size
+        noise_matrix = window.*RDM(row:(winSize(1) + row - 1), col:(winSize(2) + col - 1));
+        noise_matrix = db2pow(noise_matrix);                % Convert from decibal to linear scale
+        noise       = sum(sum(noise_matrix, 'All'));        % Add all the noises from the noise_matrix
+        threshold   = (noise / TrnCells) * offset;          % Average the Noise and multiplying the offset
+        threshold   = pow2db(threshold);                    % Convert to decibal 
+        signal      = RDM(row + Tr + Gr, col + Tc + Gc);    % Extract the signal from CUT cell
         
         if signal > threshold
             RDM_CFAR(row + Tr + Gr, col + Tc + Gc) = 1;
